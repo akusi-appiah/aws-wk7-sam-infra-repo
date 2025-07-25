@@ -1,0 +1,39 @@
+name: Deploy DynamoDB Table
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-sam:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Set up SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Package SAM template
+        run: |
+          sam package \
+            --template-file dynamo.yaml \
+            --output-template-file packaged.yaml \
+            --s3-bucket ${{ secrets.S3_BUCKET_NAME }}
+
+      - name: Deploy SAM stack
+        run: |
+          sam deploy \
+            --template-file packaged.yaml \
+            --stack-name todo-app-dynamodb \
+            --capabilities CAPABILITY_IAM \
+            --region eu-west-1 \
+            --no-fail-on-empty-changeset

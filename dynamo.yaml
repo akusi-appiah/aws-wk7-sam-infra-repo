@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'SAM template for DynamoDB table for Todo app'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: 'prod'
+    Description: 'Environment name for tagging'
+
+Resources:
+  TodoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${EnvironmentName}-todo-table
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+Outputs:
+  TableName:
+    Value: !Ref TodoTable
+  TableArn:
+    Value: !GetAtt TodoTable.Arn
