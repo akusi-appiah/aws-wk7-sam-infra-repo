@@ -17,7 +17,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
-      - name: Set up Python virtual environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Create and activate virtual environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
@@ -26,7 +30,7 @@ jobs:
       - name: Install SAM CLI
         run: |
           source venv/bin/activate
-          sudo pip3 install aws-sam-cli
+          pip install aws-sam-cli
           sam --version
 
       - name: Deploy SAM stack
