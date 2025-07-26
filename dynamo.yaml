@@ -25,7 +25,5 @@ Resources:
           Value: !Ref EnvironmentName
 
 Outputs:
-  TableName:
-    Value: !Ref TodoTable
   TableArn:
     Value: !GetAtt TodoTable.Arn
