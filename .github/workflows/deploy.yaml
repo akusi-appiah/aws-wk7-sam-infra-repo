@@ -22,6 +22,12 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::796973518232:role/github-sam-oidc-role
           aws-region: eu-west-1  
+          
+      - name: Inspect OIDC token
+        run: |
+          ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo $ID_TOKEN | base64 --decode | tee idtoken.jwt | jq .
 
       - name: Set up SAM CLI
         uses: aws-actions/setup-sam@v2
