@@ -1,49 +1,43 @@
-# name: Deploy SAM DynamoDB Stack
+name: Deploy SAM DynamoDB Stack
 
-# on:
-#   push:
-#     branches:
-#       - main  
+on:
+  push:
+    branches:
+      - main  
 
-# permissions:
-#   id-token: write   
-#   contents: read
+permissions:
+  id-token: write   
+  contents: read
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Configure AWS credentials via OIDC
-#         uses: aws-actions/configure-aws-credentials@v3
-#         with:
-#           role-to-assume: arn:aws:iam::796973518232:role/github-sam-oidc-role
-#           aws-region: eu-west-1  
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::796973518232:role/github-sam-oidc-role
+          aws-region: eu-west-1  
 
-#       - name: Inspect OIDC token
-#         run: |
-#           ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-#             "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
-#           echo $ID_TOKEN | base64 --decode | tee idtoken.jwt | jq .
+      - name: Set up SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          version: latest
 
-#       - name: Set up SAM CLI
-#         uses: aws-actions/setup-sam@v2
-#         with:
-#           version: latest
+      - name: Build SAM application
+        run: sam build --template-file dynamo.yaml
 
-#       - name: Build SAM application
-#         run: sam build --template-file dynamo.yaml
-
-#       - name: Deploy SAM stack
-#         run: |
-#           sam deploy \
-#             --template-file dynamo.yaml \
-#             --stack-name todo-app-dynamodb \
-#             --capabilities CAPABILITY_IAM \
-#             --region eu-west-1 \
-#             --no-confirm-changeset \
-#             --no-fail-on-empty-changeset \
-#             --parameter-overrides EnvironmentName=prod
+      - name: Deploy SAM stack
+        run: |
+          sam deploy \
+            --template-file dynamo.yaml \
+            --stack-name todo-app-dynamodb \
+            --capabilities CAPABILITY_IAM \
+            --region eu-west-1 \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides EnvironmentName=prod
