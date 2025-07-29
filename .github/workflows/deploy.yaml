@@ -1,37 +1,35 @@
-name: Deploy DynamoDB Table
+name: Deploy SAM DynamoDB Stack
 
 on:
   push:
     branches:
-      - main
+      - main  
+
+permissions:
+  id-token: write   
+  contents: read
 
 jobs:
-  deploy-sam:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Create and activate virtual environment
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
 
-      - name: Install SAM CLI
-        run: |
-          source venv/bin/activate
-          pip install aws-sam-cli
-          sam --version
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::796973518232:role/github-sam-oidc-role
+          aws-region: eu-west-1  
+
+      - name: Set up SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          version: latest
+
+      - name: Build SAM application
+        run: sam build --template-file dynamo.yaml
 
       - name: Deploy SAM stack
         run: |
@@ -40,5 +38,6 @@ jobs:
             --stack-name todo-app-dynamodb \
             --capabilities CAPABILITY_IAM \
             --region eu-west-1 \
+            --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --no-confirm-changeset
+            --parameter-overrides EnvironmentName=prod
