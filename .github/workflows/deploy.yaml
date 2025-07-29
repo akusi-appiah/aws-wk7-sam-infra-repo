@@ -26,8 +26,7 @@ jobs:
       - name: Set up SAM CLI
         uses: aws-actions/setup-sam@v2
         with:
-          with:
-            use-installer: true
+          use-installer: true
 
       - name: Build SAM application
         run: sam build --template-file dynamo.yaml
